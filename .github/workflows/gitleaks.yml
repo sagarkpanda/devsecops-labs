@@ -31,6 +31,7 @@ jobs:
           GITLEAKS_ENABLE_UPLOAD_RESULTS: true
 
       - name: Generate SARIF
+        if: ${{ always() }}
         run: |
           docker run --rm \
             -v "$PWD:/path" \
