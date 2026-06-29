@@ -29,7 +29,7 @@ jobs:
             --config auto \
             --sarif \
             --output semgrep.sarif \
-             --error-on-findings=false \
+            --error-on-findings=false \
             .
 
       - name: Upload SARIF
