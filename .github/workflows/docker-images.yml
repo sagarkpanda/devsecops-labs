@@ -1,0 +1,53 @@
+name: Build and Push Images
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    name: Build and Push Images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set image variables
+        run: |
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+          echo "GITHUB_REPOSITORY_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build images
+        run: docker compose build
+
+      - name: Tag images
+        run: |
+          docker tag \
+            ghcr.io/${GITHUB_REPOSITORY_OWNER}/web-app:latest \
+            ghcr.io/${GITHUB_REPOSITORY_OWNER}/web-app:${SHORT_SHA}
+
+          docker tag \
+            ghcr.io/${GITHUB_REPOSITORY_OWNER}/migration-app:latest \
+            ghcr.io/${GITHUB_REPOSITORY_OWNER}/migration-app:${SHORT_SHA}
+
+      - name: Push images
+        run: |
+          docker push ghcr.io/${GITHUB_REPOSITORY_OWNER}/web-app:latest
+          docker push ghcr.io/${GITHUB_REPOSITORY_OWNER}/web-app:${SHORT_SHA}
+
+          docker push ghcr.io/${GITHUB_REPOSITORY_OWNER}/migration-app:latest
+          docker push ghcr.io/${GITHUB_REPOSITORY_OWNER}/migration-app:${SHORT_SHA}

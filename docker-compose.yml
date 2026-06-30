@@ -1,5 +1,6 @@
 services:
   web:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-local}/web-app:${TAG:-latest}
     build: .
     command: gunicorn --bind 0.0.0.0:8000 --workers 6 pygoat.wsgi
     ports:
@@ -9,6 +10,7 @@ services:
     depends_on:
       - migration
   migration:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-local}/migration-app:${TAG:-latest}
     build: .
     command: python manage.py migrate --noinput
     volumes:
