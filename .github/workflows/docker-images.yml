@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   packages: write
+  security-events: write
 
 jobs:
   build-and-push:
@@ -33,6 +34,40 @@ jobs:
 
       - name: Build images
         run: docker compose build
+
+      - name: Scan web-app image
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/web-app:latest
+          format: sarif
+          output: trivy-web-app.sarif
+          scanners: vuln
+          # severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 0
+
+      - name: Scan migration-app image
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/migration-app:latest
+          format: sarif
+          output: trivy-migration-app.sarif
+          scanners: vuln
+          # severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: 0
+
+      - name: Upload web-app SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-web-app.sarif
+          category: trivy-web-app
+
+      - name: Upload migration-app SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-migration-app.sarif
+          category: trivy-migration-app
 
       - name: Tag images
         run: |
