@@ -36,7 +36,7 @@ jobs:
         run: docker compose build
 
       - name: Scan web-app image
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/web-app:latest
           format: sarif
@@ -47,7 +47,7 @@ jobs:
           exit-code: 0
 
       - name: Scan migration-app image
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/migration-app:latest
           format: sarif
