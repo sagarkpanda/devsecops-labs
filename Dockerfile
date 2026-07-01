@@ -1,4 +1,4 @@
-FROM python:3.11.13-bookworm
+FROM python:3.14.6-bookworm
 
 
 # set work directory
