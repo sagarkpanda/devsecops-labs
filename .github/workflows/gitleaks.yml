@@ -78,7 +78,8 @@ jobs:
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -H "Accept: application/json" \
             -F "scan_type=SARIF" \
-            -F "file=@semgrep.sarif" \
+            -F "file=@gitleaks-fs.sarif"
+            -F "test_title=Gitleaks Filesystem"
             -F "product_type_name=Research and Development" \
             -F "product_name=devsecops-labs" \
             -F "engagement_name=GitHub Actions Pipeline" \
