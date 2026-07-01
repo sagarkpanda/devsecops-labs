@@ -75,7 +75,7 @@ jobs:
         run: |
           curl -v \
             -X POST \
-            "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
+            "${{ secrets.DEFECTDOJO_URL }}/api/v2/import-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -H "Accept: application/json" \
             -F "scan_type=SARIF" \
