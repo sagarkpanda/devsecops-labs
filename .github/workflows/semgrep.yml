@@ -2,9 +2,7 @@ name: Semgrep
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -26,11 +24,7 @@ jobs:
       - name: Run Semgrep
         continue-on-error: true
         run: |
-          semgrep scan \
-            --config auto \
-            --sarif \
-            --output semgrep.sarif \
-            .
+          semgrep scan --config auto --sarif --output semgrep.sarif .
 
       - name: Upload SARIF to GitHub Security
         if: always()
@@ -48,8 +42,6 @@ jobs:
       - name: Upload to DefectDojo
         if: always()
         run: |
-          echo "Uploading Semgrep SARIF to DefectDojo..."
-
           RESPONSE=$(curl --fail --show-error --silent \
             -X POST \
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
@@ -66,7 +58,6 @@ jobs:
             -F "environment=Development" \
             -F "build_id=${{ github.run_number }}" \
             -F "branch_tag=${{ github.ref_name }}" \
-            -F "commit_hash=${{ github.sha }}")
-
-          echo "DefectDojo response:"
+            -F "commit_hash=${{ github.sha }}" \
+            -F "tags=github-actions,semgrep,${{ github.ref_name }}")
           echo "$RESPONSE"

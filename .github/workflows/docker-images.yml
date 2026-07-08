@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   build-and-push:
+    # if: ${{ !(github.event_name == 'pull_request' && github.actor == 'dependabot[bot]') }}
     name: Build and Push Images
     runs-on: ubuntu-latest
 
@@ -58,7 +59,6 @@ jobs:
           format: sarif
           output: trivy-web-app.sarif
           scanners: vuln
-          # severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: 0
 
@@ -69,7 +69,6 @@ jobs:
           format: sarif
           output: trivy-migration-app.sarif
           scanners: vuln
-          # severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: 0
 
@@ -88,8 +87,7 @@ jobs:
       - name: Upload Trivy Filesystem to DefectDojo
         if: always()
         run: |
-          curl -v \
-            -X POST \
+          curl -X POST \
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -H "Accept: application/json" \
@@ -99,8 +97,9 @@ jobs:
             -F "product_name=devsecops-labs" \
             -F "engagement_name=GitHub Actions Pipeline" \
             -F "test_title=Trivy Filesystem" \
-            -F "close_old_findings=false" \
+            -F "close_old_findings=true" \
             -F "do_not_reactivate=false" \
+            -F "tags=trivy,filesystem" \
             -F "environment=Development" \
             -F "build_id=${{ github.run_number }}" \
             -F "branch_tag=${{ github.ref_name }}" \
@@ -109,8 +108,7 @@ jobs:
       - name: Upload Trivy Web Image to DefectDojo
         if: always()
         run: |
-          curl -v \
-            -X POST \
+          curl -X POST \
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -H "Accept: application/json" \
@@ -120,8 +118,9 @@ jobs:
             -F "product_name=devsecops-labs" \
             -F "engagement_name=GitHub Actions Pipeline" \
             -F "test_title=Trivy Web Image" \
-            -F "close_old_findings=false" \
+            -F "close_old_findings=true" \
             -F "do_not_reactivate=false" \
+            -F "tags=trivy,image,web-app" \
             -F "environment=Development" \
             -F "build_id=${{ github.run_number }}" \
             -F "branch_tag=${{ github.ref_name }}" \
@@ -130,8 +129,7 @@ jobs:
       - name: Upload Trivy Migration Image to DefectDojo
         if: always()
         run: |
-          curl -v \
-            -X POST \
+          curl -X POST \
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
             -H "Accept: application/json" \
@@ -141,8 +139,9 @@ jobs:
             -F "product_name=devsecops-labs" \
             -F "engagement_name=GitHub Actions Pipeline" \
             -F "test_title=Trivy Migration Image" \
-            -F "close_old_findings=false" \
+            -F "close_old_findings=true" \
             -F "do_not_reactivate=false" \
+            -F "tags=trivy,image,migration-app" \
             -F "environment=Development" \
             -F "build_id=${{ github.run_number }}" \
             -F "branch_tag=${{ github.ref_name }}" \
@@ -150,18 +149,12 @@ jobs:
 
       - name: Tag images
         run: |
-          docker tag \
-            ghcr.io/${GITHUB_REPOSITORY_OWNER}/web-app:latest \
-            ghcr.io/${GITHUB_REPOSITORY_OWNER}/web-app:${SHORT_SHA}
-
-          docker tag \
-            ghcr.io/${GITHUB_REPOSITORY_OWNER}/migration-app:latest \
-            ghcr.io/${GITHUB_REPOSITORY_OWNER}/migration-app:${SHORT_SHA}
+          docker tag ghcr.io/${GITHUB_REPOSITORY_OWNER}/web-app:latest ghcr.io/${GITHUB_REPOSITORY_OWNER}/web-app:${SHORT_SHA}
+          docker tag ghcr.io/${GITHUB_REPOSITORY_OWNER}/migration-app:latest ghcr.io/${GITHUB_REPOSITORY_OWNER}/migration-app:${SHORT_SHA}
 
       - name: Push images
         run: |
           docker push ghcr.io/${GITHUB_REPOSITORY_OWNER}/web-app:latest
           docker push ghcr.io/${GITHUB_REPOSITORY_OWNER}/web-app:${SHORT_SHA}
-
           docker push ghcr.io/${GITHUB_REPOSITORY_OWNER}/migration-app:latest
           docker push ghcr.io/${GITHUB_REPOSITORY_OWNER}/migration-app:${SHORT_SHA}
