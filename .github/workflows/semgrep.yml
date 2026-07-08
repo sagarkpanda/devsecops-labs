@@ -48,9 +48,9 @@ jobs:
       - name: Upload to DefectDojo
         if: always()
         run: |
-          ls -lah
+          echo "Uploading Semgrep SARIF to DefectDojo..."
 
-          curl -v \
+          RESPONSE=$(curl --fail --show-error --silent \
             -X POST \
             "${{ secrets.DEFECTDOJO_URL }}/api/v2/reimport-scan/" \
             -H "Authorization: Token ${{ secrets.DEFECTDOJO_API_KEY }}" \
@@ -61,9 +61,12 @@ jobs:
             -F "product_name=devsecops-labs" \
             -F "engagement_name=GitHub Actions Pipeline" \
             -F "test_title=Semgrep" \
-            -F "close_old_findings=false" \
+            -F "close_old_findings=true" \
             -F "do_not_reactivate=false" \
             -F "environment=Development" \
             -F "build_id=${{ github.run_number }}" \
             -F "branch_tag=${{ github.ref_name }}" \
-            -F "commit_hash=${{ github.sha }}"
+            -F "commit_hash=${{ github.sha }}")
+
+          echo "DefectDojo response:"
+          echo "$RESPONSE"
